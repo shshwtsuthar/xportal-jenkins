@@ -8,8 +8,8 @@
 // transitioning the application's status from 'DRAFT' to 'SUBMITTED'.
 //
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { serve } from 'std/http/server.ts';
+import { createClient } from '@supabase/supabase-js';
 
 // --- Type Imports ---
 // Import the auto-generated TypeScript types for your database.
@@ -85,7 +85,7 @@ function validateApplication(application: Application): string[] {
 /**
  * The main Deno request handler.
  */
-serve(async (req) => {
+serve(async (req: Request) => {
   // This is a standard requirement for CORS-enabled routes.
   // It handles the preflight request sent by the browser.
   if (req.method === 'OPTIONS') {
