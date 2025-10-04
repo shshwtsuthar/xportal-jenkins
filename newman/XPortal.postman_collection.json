@@ -1,0 +1,297 @@
+{
+	"info": {
+		"_postman_id": "17639b6a-7ce7-4753-a6b9-65c5d40196ea",
+		"name": "XPortal",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "46571965",
+		"_collection_link": "https://shashwat-643791.postman.co/workspace/shashwat's-Workspace~c32ae222-b441-4ffb-8b94-eb7f4010c4de/collection/46571965-17639b6a-7ce7-4753-a6b9-65c5d40196ea?action=share&source=collection_link&creator=46571965"
+	},
+	"item": [
+		{
+			"name": "Submit Valid Application",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Response message is correct\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.message).to.eql(\"Application submitted successfully\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{anonKey}}",
+						"type": "text"
+					},
+					{
+						"key": "apikey",
+						"value": "{{anonKey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"applicationId\": \"{{validApplicationId}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/functions/v1/submit-application",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"functions",
+						"v1",
+						"submit-application"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Attempt to Submit Invalid Application",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 Bad Request\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"pm.test(\"Response contains validation error details\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.error).to.eql(\"Validation failed\");\r",
+							"    pm.expect(jsonData.details).to.be.an('array').that.is.not.empty;\r",
+							"    pm.expect(jsonData.details[0]).to.include(\"Unique Student Identifier (USI)\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{anonKey}}",
+						"type": "text"
+					},
+					{
+						"key": "apikey",
+						"value": "{{anonKey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"applicationId\": \"{{invalidApplicationId}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/functions/v1/submit-application",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"functions",
+						"v1",
+						"submit-application"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Attempt to Re-Submit a Valid Application",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 409 Conflict\", function () {\r",
+							"    pm.response.to.have.status(409);\r",
+							"});\r",
+							"pm.test(\"Response contains correct state conflict error\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.error).to.include(\"already in 'SUBMITTED' status\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{anonKey}}",
+						"type": "text"
+					},
+					{
+						"key": "apikey",
+						"value": "{{anonKey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"applicationId\": \"{{validApplicationId}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/functions/v1/submit-application",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"functions",
+						"v1",
+						"submit-application"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Attempt to Submit Non-Existent Application",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404 Not Found\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{anonKey}}",
+						"type": "text"
+					},
+					{
+						"key": "apikey",
+						"value": "{{anonKey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"applicationId\": \"11111111-1111-1111-1111-111111111111\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/functions/v1/submit-application",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"functions",
+						"v1",
+						"submit-application"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": ""
+		},
+		{
+			"key": "anonKey",
+			"value": ""
+		},
+		{
+			"key": "validApplicationId",
+			"value": ""
+		},
+		{
+			"key": "invalidApplicationId",
+			"value": ""
+		}
+	]
+}
