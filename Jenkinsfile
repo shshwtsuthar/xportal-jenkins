@@ -33,7 +33,6 @@ pipeline {
     
     tools {
         nodejs "NodeJS-${NODE_VERSION}"
-        // dockerTool 'docker' // Docker is usually available on the agent path
     }
     
     stages {
@@ -101,10 +100,8 @@ pipeline {
                             echo "=== Running Playwright E2E tests on local container ==="
                             sh 'npx playwright install --with-deps chromium'
                             
-                            // Use a docker container for a clean test environment
                             sh "docker run -d --name xportal-test-${BUILD_NUMBER} -p 3000:3000 ${APP_NAME}:${BUILD_NUMBER}"
                             
-                            // Wait for server to be ready
                             sh '''
                                 for i in {1..30}; do
                                     if curl -s http://localhost:3000/api/health > /dev/null; then
@@ -122,7 +119,15 @@ pipeline {
                     post {
                         always {
                             junit 'test-results/**/*.xml'
-                            publishHTML(reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright Report')
+                            // ##### THIS BLOCK HAS BEEN FIXED #####
+                            publishHTML(target: [
+                                allowMissing: false,
+                                alwaysLinkToLastBuild: true,
+                                keepAll: true,
+                                reportDir: 'playwright-report',
+                                reportFiles: 'index.html',
+                                reportName: 'Playwright Report'
+                            ])
                             sh "docker stop xportal-test-${BUILD_NUMBER} && docker rm xportal-test-${BUILD_NUMBER}"
                         }
                     }
@@ -134,10 +139,9 @@ pipeline {
                         script {
                             echo "=== Running Newman API tests ==="
                             sh '''
-                                # Start server in background
                                 npm start &
                                 SERVER_PID=$!
-                                sleep 15 // Give it time to start
+                                sleep 15
                                 
                                 newman run newman/*.json --reporters cli,htmlextra --reporter-htmlextra-export newman-report.html || true
                                 
@@ -147,7 +151,15 @@ pipeline {
                     }
                     post {
                         always {
-                            publishHTML(reportDir: '.', reportFiles: 'newman-report.html', reportName: 'Newman API Report', allowMissing: true)
+                            // ##### THIS BLOCK HAS BEEN FIXED #####
+                            publishHTML(target: [
+                                allowMissing: true, // allowMissing is useful here in case tests don't run
+                                alwaysLinkToLastBuild: true,
+                                keepAll: true,
+                                reportDir: '.',
+                                reportFiles: 'newman-report.html',
+                                reportName: 'Newman API Report'
+                            ])
                         }
                     }
                 }
@@ -161,14 +173,10 @@ pipeline {
             }
         }
         
-        // ##### THIS STAGE HAS BEEN FIXED #####
         stage('📊 Code Quality Analysis') {
             steps {
                 script {
-                    // Get the path to the SonarScanner tool installation
                     def scannerHome = tool 'SonarScanner'
-
-                    // Now, wrap the shell command in the SonarQube environment
                     withSonarQubeEnv('SonarQube') {
                         sh """
                             ${scannerHome}/bin/sonar-scanner \\
@@ -196,7 +204,14 @@ pipeline {
                     }
                     post {
                         always {
-                            publishHTML(reportDir: 'owasp-reports', reportFiles: 'dependency-check-report.html', reportName: 'OWASP Report')
+                            publishHTML(target: [
+                                allowMissing: false,
+                                alwaysLinkToLastBuild: true,
+                                keepAll: true,
+                                reportDir: 'owasp-reports',
+                                reportFiles: 'dependency-check-report.html',
+                                reportName: 'OWASP Report'
+                            ])
                             dependencyCheckPublisher pattern: 'owasp-reports/dependency-check-report.xml'
                         }
                     }
@@ -241,10 +256,8 @@ pipeline {
                     echo "=== Running integration tests on staging environment ==="
                     def stagingUrl = sh(script: 'cat staging-url.txt', returnStdout: true).trim()
                     
-                    // Wait for deployment to be ready
                     sh "sleep 15"
                     
-                    // Run Playwright tests against the live staging URL
                     sh """
                         PLAYWRIGHT_TEST_BASE_URL=${stagingUrl} npm run test:ci
                     """
@@ -255,7 +268,6 @@ pipeline {
         stage('릴리스 Release to Production') {
             steps {
                 script {
-                    // This manual gate is crucial for a controlled release process
                     input "Promote build #${BUILD_NUMBER} to Production?"
                     
                     echo "=== Releasing to Vercel Production ==="
@@ -280,7 +292,6 @@ pipeline {
                     echo "=== Monitoring production application health ==="
                     def prodUrl = sh(script: 'cat production-url.txt', returnStdout: true).trim()
                     
-                    // Give the production deployment a moment to be fully available
                     sh "sleep 20"
                     
                     echo "Checking /api/health endpoint..."
@@ -298,7 +309,7 @@ pipeline {
     post {
         always {
             echo "Pipeline finished with status: ${currentBuild.currentResult}"
-            cleanWs() // Cleans up the workspace to save disk space
+            cleanWs()
         }
         success {
             echo "✅ Build successful!"
