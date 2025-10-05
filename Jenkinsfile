@@ -213,14 +213,16 @@ pipeline {
             steps {
                 script {
                     echo "=== Deploying to Vercel Staging ==="
-                    sh """
-                        vercel deploy \\
-                            --token ${VERCEL_TOKEN} \\
-                            --yes \\
-                            --build-env NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL} \\
-                            --build-env NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY} \\
-                            > staging-url.txt
-                    """
+                    withCredentials([string(credentialsId: 'vercel-token', variable: 'VERCEL_TOKEN_CI')]) {
+                        sh """
+                            vercel deploy \\
+                                --token ${VERCEL_TOKEN_CI} \\
+                                --yes \\
+                                --build-env NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL} \\
+                                --build-env NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY} \\
+                                > staging-url.txt
+                        """
+                    }
                     def stagingUrl = sh(script: 'cat staging-url.txt', returnStdout: true).trim()
                     echo "Deployed to Staging: ${stagingUrl}"
                     currentBuild.description = "${currentBuild.description} | Staging: ${stagingUrl}"
@@ -249,14 +251,16 @@ pipeline {
                     input "Promote build #${BUILD_NUMBER} to Production?"
                     
                     echo "=== Releasing to Vercel Production ==="
-                    sh """
-                        vercel deploy --prod \\
-                            --token ${VERCEL_TOKEN} \\
-                            --yes \\
-                            --build-env NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL} \\
-                            --build-env NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY} \\
-                            > production-url.txt
-                    """
+                    withCredentials([string(credentialsId: 'vercel-token', variable: 'VERCEL_TOKEN_CI')]) {
+                        sh """
+                            vercel deploy --prod \\
+                                --token ${VERCEL_TOKEN_CI} \\
+                                --yes \\
+                                --build-env NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL} \\
+                                --build-env NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY} \\
+                                > production-url.txt
+                        """
+                    }
                     def prodUrl = sh(script: 'cat production-url.txt', returnStdout: true).trim()
                     echo "✅ Released to Production: ${prodUrl}"
                     currentBuild.description = "${currentBuild.description} | Production: ${prodUrl}"
