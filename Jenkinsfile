@@ -99,7 +99,7 @@ pipeline {
                     echo "=== Seeding initial data into Supabase ==="
                     withEnv([
                         "SUPABASE_URL=${SUPABASE_URL}",
-                        "SUPABASE_SERVICE_ROLE=${SUPABASE_SERVICE_ROLE}",
+                        "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE}",
                         "NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}",
                         "NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}"
                     ]) {
