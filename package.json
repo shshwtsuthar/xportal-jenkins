@@ -6,8 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "type-check": "tsc --noEmit",
     "test": "playwright test",
@@ -96,7 +96,7 @@
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "prettier --write",
-      "npm run lint -- --fix",
+      "eslint --fix",
       "bash -c 'npx tsc --noEmit'"
     ]
   }
