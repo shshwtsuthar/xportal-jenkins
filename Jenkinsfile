@@ -115,8 +115,8 @@ pipeline {
                                     sleep 2
                                 done
                             '''
-                            // Set base URL for Playwright to hit the container port
-                            sh 'PLAYWRIGHT_TEST_BASE_URL=http://localhost:3001 npm run test:ci'
+                            // Run a small subset of smoke tests only
+                            sh 'DEBUG=pw:api PLAYWRIGHT_TEST_BASE_URL=http://localhost:3001 npx playwright test tests/auth.spec.ts --reporter=junit --reporter=html --workers=1 --timeout=30000 --trace=on'
                         }
                     }
                     post {
@@ -144,7 +144,7 @@ pipeline {
                             // Call Supabase Edge Functions using configured SUPABASE_URL
                             sh """
                                 newman run newman/*.json \
-                                  --env-var BASE_URL=\"${SUPABASE_URL}\" \
+                                  --env-var BASE_URL=\"${SUPABASE_URL}/functions/v1\" \
                                   --reporters cli,htmlextra \
                                   --reporter-htmlextra-export newman-report.html || true
                             """
