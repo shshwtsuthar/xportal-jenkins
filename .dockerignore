@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+*.md
+.env*
+!.env.example
+npm-debug.log*
+coverage
+.nyc_output
+.DS_Store
+*.pem
+test-results
+playwright-report
+newman-report*
+
