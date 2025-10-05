@@ -12,7 +12,7 @@ pipeline {
     
     environment {
         // Tool versions
-        NODE_VERSION = '18'
+        NODE_VERSION = '20'
         DOCKER_BUILDKIT = '1'
         
         // Application settings
