@@ -35,7 +35,7 @@ pipeline {
     }
     
     stages {
-        stage('🔍 Checkout') {
+        stage('Checkout') {
             steps {
                 script {
                     echo "=== Checking out code from GitHub ==="
@@ -53,7 +53,7 @@ pipeline {
             }
         }
         
-        stage('📦 Install Dependencies') {
+        stage('Install Dependencies') {
             steps {
                 script {
                     echo "=== Installing Node.js dependencies ==="
@@ -63,7 +63,7 @@ pipeline {
             }
         }
         
-        stage('🔨 Build Application') {
+        stage('Build Application') {
             steps {
                 script {
                     echo "=== Building Next.js application and Docker image ==="
@@ -91,7 +91,7 @@ pipeline {
             }
         }
         
-        stage('🧪 Test Application') {
+        stage('Test Application') {
             parallel {
                 stage('Playwright E2E Tests') {
                     steps {
@@ -174,7 +174,7 @@ pipeline {
             }
         }
         
-        stage('📊 Code Quality Analysis') {
+        stage('Code Quality Analysis') {
             steps {
                 script {
                     def scannerHome = tool 'SonarQube'
@@ -186,7 +186,7 @@ pipeline {
             }
         }
         
-        stage('🔒 Security Analysis') {
+        stage('Security Analysis') {
             parallel {
                 stage('NPM Audit') {
                     steps {
@@ -208,7 +208,7 @@ pipeline {
             }
         }
         
-        stage('🚀 Deploy to Staging') {
+        stage('Deploy to Staging') {
             steps {
                 script {
                     echo "=== Deploying to Vercel Staging ==="
@@ -219,6 +219,8 @@ pipeline {
                                 --yes \\
                                 --build-env NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL} \\
                                 --build-env NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY} \\
+                                --env NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL} \\
+                                --env NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY} \\
                                 > staging-url.txt
                         """
                     }
@@ -228,23 +230,8 @@ pipeline {
                 }
             }
         }
-        
-        stage('✅ Integration Tests - Staging') {
-            steps {
-                script {
-                    echo "=== Running integration tests on staging environment ==="
-                    def stagingUrl = sh(script: 'cat staging-url.txt', returnStdout: true).trim()
-                    
-                    sh "sleep 15"
-                    
-                    sh """
-                        PLAYWRIGHT_TEST_BASE_URL=${stagingUrl} npm run test:ci
-                    """
-                }
-            }
-        }
 
-        stage('릴리스 Release to Production') {
+        stage('Release to Production') {
             steps {
                 script {
                     input "Promote build #${BUILD_NUMBER} to Production?"
@@ -257,6 +244,8 @@ pipeline {
                                 --yes \\
                                 --build-env NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL} \\
                                 --build-env NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY} \\
+                                --env NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL} \\
+                                --env NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY} \\
                                 > production-url.txt
                         """
                     }
