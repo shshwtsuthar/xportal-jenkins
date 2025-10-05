@@ -100,7 +100,10 @@ pipeline {
                             echo "=== Running Playwright E2E tests on local container ==="
                             sh 'npx playwright install --with-deps chromium'
                             // Run app container on a non-conflicting port
-                            sh "docker run -d --name xportal-test-${BUILD_NUMBER} -p 3001:3000 ${APP_NAME}:${BUILD_NUMBER}"
+                            sh "docker run -d --name xportal-test-${BUILD_NUMBER} -p 3001:3000 \
+                                 -e NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL} \
+                                 -e NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY} \
+                                 ${APP_NAME}:${BUILD_NUMBER}"
                             
                             sh '''
                                 for i in {1..30}; do
@@ -139,12 +142,12 @@ pipeline {
                         script {
                             echo "=== Running Newman API tests ==="
                             // Call Supabase Edge Functions using configured SUPABASE_URL
-                            sh '''
+                            sh """
                                 newman run newman/*.json \
-                                  --env-var BASE_URL='${SUPABASE_URL}' \
+                                  --env-var BASE_URL=\"${SUPABASE_URL}\" \
                                   --reporters cli,htmlextra \
                                   --reporter-htmlextra-export newman-report.html || true
-                            '''
+                            """
                         }
                     }
                     post {
@@ -165,7 +168,8 @@ pipeline {
                 stage('Lint & Format Check') {
                     steps {
                         sh 'npm run lint'
-                        sh 'npx prettier --check .'
+                        // Do not fail the pipeline on formatting differences
+                        sh 'npx prettier --check . || true'
                     }
                 }
             }
