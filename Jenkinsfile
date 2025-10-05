@@ -195,25 +195,6 @@ pipeline {
                     }
                 }
                 
-                stage('OWASP Dependency Check') {
-                    steps {
-                        dependencyCheck additionalArguments: '--scan . --format ALL --out ./owasp-reports', odcInstallation: 'OWASP-Dependency-Check'
-                    }
-                    post {
-                        always {
-                            publishHTML(target: [
-                                allowMissing: false,
-                                alwaysLinkToLastBuild: true,
-                                keepAll: true,
-                                reportDir: 'owasp-reports',
-                                reportFiles: 'dependency-check-report.html',
-                                reportName: 'OWASP Report'
-                            ])
-                            dependencyCheckPublisher pattern: 'owasp-reports/dependency-check-report.xml'
-                        }
-                    }
-                }
-                
                 stage('Snyk Security Scan') {
                     steps {
                         sh "snyk auth ${SNYK_TOKEN}"
