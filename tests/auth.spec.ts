@@ -12,7 +12,7 @@ test.describe('Authentication', () => {
     page,
   }) => {
     await page.goto('/login');
-    await page.fill('input[name="email"]', 'invalid@example.com');
+    await page.getByTestId('email').fill('invalid@example.com');
     await page.fill('input[name="password"]', 'wrongpassword');
     await page.click('button[type="submit"]');
     await expect(page.getByText('Invalid login credentials')).toBeVisible();
@@ -20,7 +20,7 @@ test.describe('Authentication', () => {
 
   test('should login successfully with valid credentials', async ({ page }) => {
     await page.goto('/login');
-    await page.fill('input[name="email"]', 'shshwtsuthar@gmail.com');
+    await page.getByTestId('email').fill('shshwtsuthar@gmail.com');
     await page.fill('input[name="password"]', '$ha$hw1T$uthar');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL('/dashboard');
@@ -28,7 +28,7 @@ test.describe('Authentication', () => {
 
   test('should navigate to password reset page', async ({ page }) => {
     await page.goto('/login');
-    await page.click('text=Forgot password?');
+    await page.getByTestId('forgot-password').click();
     await expect(page).toHaveURL('/auth/reset-password');
   });
 
@@ -44,7 +44,7 @@ test.describe('Authentication', () => {
   test('should allow admin to access user management', async ({ page }) => {
     // Login as admin
     await page.goto('/login');
-    await page.fill('input[name="email"]', 'shshwtsuthar@gmail.com');
+    await page.getByTestId('email').fill('shshwtsuthar@gmail.com');
     await page.fill('input[name="password"]', '$ha$hw1T$uthar');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL('/dashboard');

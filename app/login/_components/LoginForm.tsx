@@ -62,6 +62,7 @@ export function LoginForm() {
           name="email"
           type="email"
           placeholder="you@example.com"
+          data-testid="email"
           required
           disabled={isLoading}
         />
@@ -72,6 +73,7 @@ export function LoginForm() {
           <Link
             href="/auth/reset-password"
             className="text-muted-foreground hover:text-primary text-sm"
+            data-testid="forgot-password"
           >
             Forgot password?
           </Link>
