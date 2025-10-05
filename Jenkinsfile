@@ -99,12 +99,12 @@ pipeline {
                         script {
                             echo "=== Running Playwright E2E tests on local container ==="
                             sh 'npx playwright install --with-deps chromium'
-                            
-                            sh "docker run -d --name xportal-test-${BUILD_NUMBER} -p 3000:3000 ${APP_NAME}:${BUILD_NUMBER}"
+                            // Run app container on a non-conflicting port
+                            sh "docker run -d --name xportal-test-${BUILD_NUMBER} -p 3001:3000 ${APP_NAME}:${BUILD_NUMBER}"
                             
                             sh '''
                                 for i in {1..30}; do
-                                    if curl -s http://localhost:3000/api/health > /dev/null; then
+                                    if curl -s http://localhost:3001/api/health > /dev/null; then
                                         echo "✅ Test container is ready"
                                         break
                                     fi
@@ -112,13 +112,13 @@ pipeline {
                                     sleep 2
                                 done
                             '''
-                            
-                            sh 'npm run test:ci'
+                            // Set base URL for Playwright to hit the container port
+                            sh 'PLAYWRIGHT_TEST_BASE_URL=http://localhost:3001 npm run test:ci'
                         }
                     }
                     post {
                         always {
-                            junit 'test-results/**/*.xml'
+                            junit allowEmptyResults: true, testResults: 'test-results/**/*.xml'
                             // ##### THIS BLOCK HAS BEEN FIXED #####
                             publishHTML(target: [
                                 allowMissing: false,
@@ -138,14 +138,12 @@ pipeline {
                     steps {
                         script {
                             echo "=== Running Newman API tests ==="
+                            // Call Supabase Edge Functions using configured SUPABASE_URL
                             sh '''
-                                npm start &
-                                SERVER_PID=$!
-                                sleep 15
-                                
-                                newman run newman/*.json --reporters cli,htmlextra --reporter-htmlextra-export newman-report.html || true
-                                
-                                kill $SERVER_PID || true
+                                newman run newman/*.json \
+                                  --env-var BASE_URL='${SUPABASE_URL}' \
+                                  --reporters cli,htmlextra \
+                                  --reporter-htmlextra-export newman-report.html || true
                             '''
                         }
                     }
