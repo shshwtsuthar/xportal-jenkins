@@ -91,23 +91,6 @@ pipeline {
                 }
             }
         }
-        
-        stage('Seed Database') {
-            when { expression { fileExists('scripts/seed-first-admin.ts') } }
-            steps {
-                script {
-                    echo "=== Seeding initial data into Supabase ==="
-                    withEnv([
-                        "SUPABASE_URL=${SUPABASE_URL}",
-                        "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE}",
-                        "NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}",
-                        "NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}"
-                    ]) {
-                        sh 'npx tsx -r dotenv/config scripts/seed-first-admin.ts'
-                    }
-                }
-            }
-        }
 
         stage('Test Application') {
             parallel {
