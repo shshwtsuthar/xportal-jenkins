@@ -161,17 +161,23 @@ pipeline {
             }
         }
         
+        // ##### THIS STAGE HAS BEEN FIXED #####
         stage('📊 Code Quality Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
+                script {
+                    // Get the path to the SonarScanner tool installation
                     def scannerHome = tool 'SonarScanner'
-                    sh """
-                        ${scannerHome}/bin/sonar-scanner \\
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \\
-                            -Dsonar.sources=. \\
-                            -Dsonar.host.url=${SONAR_HOST_URL} \\
-                            -Dsonar.login=${SONAR_TOKEN}
-                    """
+
+                    // Now, wrap the shell command in the SonarQube environment
+                    withSonarQubeEnv('SonarQube') {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \\
+                                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \\
+                                -Dsonar.sources=. \\
+                                -Dsonar.host.url=${SONAR_HOST_URL} \\
+                                -Dsonar.login=${SONAR_TOKEN}
+                        """
+                    }
                 }
             }
         }
@@ -186,7 +192,7 @@ pipeline {
                 
                 stage('OWASP Dependency Check') {
                     steps {
-                        dependencyCheck additionalArguments: '--scan . --format ALL --out ./owasp-reports', odcInstallation: 'Default'
+                        dependencyCheck additionalArguments: '--scan . --format ALL --out ./owasp-reports', odcInstallation: 'OWASP-Dependency-Check'
                     }
                     post {
                         always {
@@ -246,7 +252,6 @@ pipeline {
             }
         }
 
-        // ADDED: Release stage with manual approval gate
         stage('릴리스 Release to Production') {
             steps {
                 script {
@@ -269,7 +274,6 @@ pipeline {
             }
         }
 
-        // ADDED: Monitoring stage to check the health of the production application
         stage('🩺 Monitor Production') {
             steps {
                 script {
@@ -291,7 +295,6 @@ pipeline {
         }
     }
 
-    // ADDED: Final post-build actions for cleanup and notifications
     post {
         always {
             echo "Pipeline finished with status: ${currentBuild.currentResult}"
@@ -299,11 +302,9 @@ pipeline {
         }
         success {
             echo "✅ Build successful!"
-            // You could add email or Slack notifications here
         }
         failure {
             echo "❌ Build failed. Please check the logs."
-            // You could add email or Slack notifications here
         }
     }
 }
