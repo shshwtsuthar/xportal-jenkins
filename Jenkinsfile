@@ -103,7 +103,7 @@ pipeline {
                         "NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}",
                         "NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}"
                     ]) {
-                        sh 'node -r dotenv/config scripts/seed-first-admin.ts'
+                        sh 'npx tsx -r dotenv/config scripts/seed-first-admin.ts'
                     }
                 }
             }
