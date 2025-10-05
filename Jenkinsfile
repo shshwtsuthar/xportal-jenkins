@@ -22,7 +22,6 @@ pipeline {
         // Credentials (configured in Jenkins)
         SUPABASE_URL = credentials('supabase-url')
         SUPABASE_ANON_KEY = credentials('supabase-anon-key')
-        VERCEL_TOKEN = credentials('vercel-token')
         SONAR_TOKEN = credentials('sonar-token')
         SNYK_TOKEN = credentials('snyk-token')
         
