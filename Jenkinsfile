@@ -232,9 +232,9 @@ pipeline {
                                 -e NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL_VAR} \\
                                 -e NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY_VAR} \\
                                 | tee staging-deployment.txt
-                            # Extract URL from the 'Preview:' line (avoid grep -P on Windows)
-                            sed -n "s/^Preview: \(https:\/\/.*\.vercel\.app\).*/\1/p" staging-deployment.txt | tail -1 > staging-url.txt
                         """
+                        // Extract URL from the 'Preview:' line using PowerShell (Windows-safe)
+                        bat 'powershell -NoProfile -Command "(Get-Content staging-deployment.txt) | Select-String -Pattern \"https://.*\\.vercel\\.app\" | Select -Last 1 | ForEach-Object { $_.Matches[0].Value } | Out-File staging-url.txt -Encoding ascii"'
                     }
                     def stagingUrl = sh(script: 'cat staging-url.txt', returnStdout: true).trim()
                     echo "Deployed to Staging: ${stagingUrl}"
@@ -261,9 +261,9 @@ pipeline {
                                 -e NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL_VAR} \\
                                 -e NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY_VAR} \\
                                 | tee production-deployment.txt
-                            # Extract URL from the 'Production:' line (avoid grep -P on Windows)
-                            sed -n "s/^Production: \(https:\/\/.*\.vercel\.app\).*/\1/p" production-deployment.txt | tail -1 > production-url.txt
                         """
+                        // Extract URL from the 'Production:' line using PowerShell (Windows-safe)
+                        bat 'powershell -NoProfile -Command "(Get-Content production-deployment.txt) | Select-String -Pattern \"https://.*\\.vercel\\.app\" | Select -Last 1 | ForEach-Object { $_.Matches[0].Value } | Out-File production-url.txt -Encoding ascii"'
                     }
                     def prodUrl = sh(script: 'cat production-url.txt', returnStdout: true).trim()
                     echo "✅ Released to Production: ${prodUrl}"
