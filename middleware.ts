@@ -7,6 +7,11 @@ export async function middleware(request: NextRequest) {
   // Get the pathname
   const path = new URL(request.url).pathname;
 
+  // Allowlist public monitoring endpoints
+  if (path.startsWith('/api/metrics') || path.startsWith('/api/health')) {
+    return NextResponse.next();
+  }
+
   // Add pathname to headers for server components
   const newHeaders = new Headers(request.headers);
   newHeaders.set('x-pathname', path);
@@ -76,6 +81,6 @@ export const config = {
      * - public (public files)
      * - api (API routes)
      */
-    '/((?!_next/static|_next/image|favicon.ico|public|api).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
   ],
 };
