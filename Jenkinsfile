@@ -141,13 +141,20 @@ pipeline {
                     steps {
                         script {
                             echo "=== Running Newman API tests ==="
-                            // Call Supabase Edge Functions using explicit BASE_URL to avoid empty var issues
-                            sh """
-                                newman run newman/XPortal.postman_collection.json \
-                                  --env-var BASE_URL=https://fumgmfpkrhcguzmbualt.supabase.co/functions/v1 \
-                                  --reporters cli,htmlextra \
-                                  --reporter-htmlextra-export newman-report.html || true
-                            """
+                            // Create Newman environment matching collection variables (baseUrl, anonKey)
+                            withCredentials([string(credentialsId: 'supabase-anon-key', variable: 'SUPABASE_ANON_KEY_VAR')]) {
+                                writeFile file: 'newman-env.json', text: """{
+    "id": "ci-environment",
+    "name": "CI Environment",
+    "values": [
+        { "key": "baseUrl", "value": "https://fumgmfpkrhcguzmbualt.supabase.co", "enabled": true },
+        { "key": "anonKey", "value": "${SUPABASE_ANON_KEY_VAR}", "enabled": true }
+    ]
+}"""
+
+                                // Run Newman with the environment file
+                                sh 'newman run newman/XPortal.postman_collection.json --environment newman-env.json --reporters cli,htmlextra --reporter-htmlextra-export newman-report.html || true'
+                            }
                         }
                     }
                     post {
