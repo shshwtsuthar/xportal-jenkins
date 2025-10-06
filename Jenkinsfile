@@ -232,7 +232,8 @@ pipeline {
                                 -e NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL_VAR} \\
                                 -e NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY_VAR} \\
                                 | tee staging-deployment.txt
-                            grep -oP 'https://[^\\s]+\\.vercel\\.app' staging-deployment.txt | tail -1 > staging-url.txt
+                            # Extract URL from the 'Preview:' line (avoid grep -P on Windows)
+                            sed -n "s/^Preview: \(https:\/\/.*\.vercel\.app\).*/\1/p" staging-deployment.txt | tail -1 > staging-url.txt
                         """
                     }
                     def stagingUrl = sh(script: 'cat staging-url.txt', returnStdout: true).trim()
@@ -260,7 +261,8 @@ pipeline {
                                 -e NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL_VAR} \\
                                 -e NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY_VAR} \\
                                 | tee production-deployment.txt
-                            grep -oP 'https://[^\\s]+\\.vercel\\.app' production-deployment.txt | tail -1 > production-url.txt
+                            # Extract URL from the 'Production:' line (avoid grep -P on Windows)
+                            sed -n "s/^Production: \(https:\/\/.*\.vercel\.app\).*/\1/p" production-deployment.txt | tail -1 > production-url.txt
                         """
                     }
                     def prodUrl = sh(script: 'cat production-url.txt', returnStdout: true).trim()
